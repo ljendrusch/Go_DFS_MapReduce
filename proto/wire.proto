@@ -1,0 +1,178 @@
+syntax = "proto3";
+option go_package = "./wire";
+
+enum Serv_type {
+    CNTRLR = 0;
+    CMPMGR = 1;
+}
+
+enum File_type {
+    BIN = 0;
+    TXT = 1;
+}
+
+message Chunk_id {
+    string f_name = 1;
+    File_type f_type = 2;
+    int32 c_idx = 3;
+    int64 c_size = 4;
+}
+
+message Chunk_map {
+    File_type f_type = 1;
+    map<int32, int64> c_map = 2;
+}
+
+message StringTripleCSize {
+    string s1 = 1;
+    string s2 = 2;
+    string s3 = 3;
+    int64 c_size = 4;
+}
+
+message ReducerAddr {
+    int32 idx = 1;
+    string addr = 2;
+}
+message Defibrillate {
+    string name = 1;
+}
+
+message Heartbeat {
+    uint64 space = 1;
+    int32 served = 2;
+    int64 busy = 3;
+    map<string, Chunk_map> chunk_map = 4;
+}
+
+message ChunkNodePorts {
+    // array of strings of {node:port}'s; they're in order so
+    // nodes[0] is first chunk, nodes[n] is nth chunk
+    repeated StringTripleCSize nodes = 1;
+}
+
+message ChunkUpload {
+    Chunk_id chunk_id = 1;
+    bytes checksum = 2;
+    bytes data = 3;
+}
+
+message ChunkDownload {
+    Chunk_id chunk_id = 1;
+    bytes checksum = 2;
+    bytes data = 3;
+}
+
+message ChunkReplicate {
+    Chunk_id chunk_id = 1;
+    repeated string nodes = 2;
+}
+
+message Store {
+    string name = 1;
+    int64 n_chunks = 2;
+    int64 f_size = 3;
+    int64 c_size = 4;
+}
+
+message RetrieveRq {
+    string filename = 1;
+}
+
+message RetrieveRs {
+    File_type f_type = 1;
+    repeated StringTripleCSize retrieve = 2;
+}
+
+message Delete {
+    string delete = 1;
+}
+
+message MRRequest {
+    string job_name = 1;
+    repeated string file_names = 2;
+    bytes plugin_go = 3;
+    bytes checksum = 4;
+}
+
+message MRUpdate {
+    int32 R = 1;
+    string update = 2;
+    repeated ReducerAddr reducer_addrs = 3;
+}
+
+message MRMapReq {
+    string job_name = 1;
+    int32 m_id = 2;
+    repeated string chunk_names = 3;
+    repeated string reducer_addrs = 4;
+    bytes plugin_so = 5;
+    bytes checksum = 6;
+}
+
+message MRMapResult {
+    string job_name = 1;
+    int32 r_id = 2;
+    int32 m_id = 3;
+    bytes kvs = 4;
+    bytes checksum = 5;
+}
+
+message MRReduceReq {
+    string job_name = 1;
+    int32 r_id = 2;
+    int32 m = 3;
+    bytes plugin_so = 4;
+    bytes checksum = 5;
+}
+
+message MRReduceResult {
+    string job_name = 1;
+    int32 r_id = 2;
+    bytes data = 3;
+    bytes checksum = 4;
+}
+
+message List {
+    string list = 1;
+}
+
+message Info {
+    string info = 1;
+}
+
+message Activity {
+    string activity = 1;
+}
+
+message Repeat {}
+
+message Message {
+    string message = 1;
+}
+
+message Wrapper {
+    oneof msg {
+        Defibrillate df = 1;
+        Heartbeat hb = 2;
+        ChunkNodePorts cnp = 3;
+        ChunkUpload cul = 4;
+        ChunkDownload cdl = 5;
+        ChunkReplicate crp = 6;
+        Store st = 7;
+        RetrieveRq rtq = 8;
+        RetrieveRs rtr = 9;
+        Delete dl = 10;
+        MRRequest mr = 11;
+        MRUpdate mu = 12;
+        MRMapReq mrm = 13;
+        MRMapResult mrmr = 14;
+        MRReduceReq mrr = 15;
+        MRReduceResult mrrr = 16;
+        List ls = 17;
+        Info if = 18;
+        Activity ac = 19;
+        Repeat rp = 20;
+        Message ms = 21;
+    }
+}
